@@ -154,6 +154,7 @@ export const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
   minimumDate,
 }) => {
   const [tempDate, setTempDate] = React.useState(initialDate);
+  const { theme } = useThemeStore();
 
   React.useEffect(() => {
     setTempDate(initialDate);
@@ -179,6 +180,17 @@ export const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
       onConfirm={handleConfirm}
       title={title}
     >
+      {/* Overlay for dark mode */}
+      {theme === "dark" && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: "rgba(0,0,0,0.1)",
+            zIndex: 1,
+          }}
+          pointerEvents="none"
+        />
+      )}
       <DateTimePicker
         value={tempDate}
         mode="date"
@@ -186,7 +198,7 @@ export const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
         onChange={handleDateChange}
         maximumDate={maximumDate}
         minimumDate={minimumDate}
-        style={{ height: Platform.OS === "ios" ? 200 : "auto" }}
+        style={{ height: Platform.OS === "ios" ? 200 : "auto", zIndex: 2 }}
       />
     </CustomBottomSheet>
   );
