@@ -96,7 +96,7 @@ function RootLayoutNav() {
         name="transaction/edit/[id]"
         options={{
           title: "Edit Transaction",
-          presentation: "modal",
+          //presentation: "modal",
         }}
       />
     </Stack>
