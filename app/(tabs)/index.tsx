@@ -30,7 +30,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     if (user && user.id) {
-      fetchTransactions();
+      fetchTransactions(user.id);
     } else {
       // Clear transactions if no user
       setFilterOptions({ period: "today", type: "all" });

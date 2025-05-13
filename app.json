@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.chaucherita-finance-app"
+      "bundleIdentifier": "app.wallet.chaucherita"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.chaucherita-finance-app"
+      "package": "app.wallet.chaucherita"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
