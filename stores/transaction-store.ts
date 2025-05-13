@@ -94,7 +94,29 @@ export const useTransactionStore = create<TransactionState>()(
       },
 
       addTransaction: async (transaction) => {
-        set({ isLoading: true, error: null });
+        const tempId = `temp-${Date.now()}`;
+        const optimisticTransaction = { ...transaction, id: tempId };
+        // Optimistically add
+        set((state) => {
+          const newTransactions = [
+            optimisticTransaction,
+            ...state.transactions,
+          ];
+          const filteredTransactions = filterTransactions(
+            newTransactions,
+            state.filterOptions
+          );
+          const summary = calculateSummary(
+            newTransactions,
+            filteredTransactions
+          );
+          return {
+            ...state,
+            transactions: newTransactions,
+            filteredTransactions,
+            summary,
+          };
+        });
         try {
           const token = await getAuthToken();
           const res = await fetch(API_URL, {
@@ -111,21 +133,80 @@ export const useTransactionStore = create<TransactionState>()(
           const data = await res.json();
           if (!res.ok)
             throw new Error(data.error || "Failed to add transaction");
-          // Refetch all transactions to keep in sync
-          await get().fetchTransactions();
+          // Replace temp transaction with real one
+          set((state) => {
+            const newTransactions = [
+              data,
+              ...state.transactions.filter((t) => t.id !== tempId),
+            ];
+            const filteredTransactions = filterTransactions(
+              newTransactions,
+              state.filterOptions
+            );
+            const summary = calculateSummary(
+              newTransactions,
+              filteredTransactions
+            );
+            return {
+              ...state,
+              transactions: newTransactions,
+              filteredTransactions,
+              summary,
+              isLoading: false,
+            };
+          });
         } catch (error) {
-          set({
-            error:
-              error instanceof Error
-                ? error.message
-                : "Failed to add transaction",
-            isLoading: false,
+          // Rollback
+          set((state) => {
+            const newTransactions = state.transactions.filter(
+              (t) => t.id !== tempId
+            );
+            const filteredTransactions = filterTransactions(
+              newTransactions,
+              state.filterOptions
+            );
+            const summary = calculateSummary(
+              newTransactions,
+              filteredTransactions
+            );
+            return {
+              ...state,
+              transactions: newTransactions,
+              filteredTransactions,
+              summary,
+              isLoading: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Failed to add transaction",
+            };
           });
         }
       },
 
       updateTransaction: async (id, updatedFields) => {
-        set({ isLoading: true, error: null });
+        // Snapshot previous state
+        const prevTransactions = get().transactions;
+        // Optimistically update
+        set((state) => {
+          const newTransactions = state.transactions.map((t) =>
+            t.id === id ? { ...t, ...updatedFields } : t
+          );
+          const filteredTransactions = filterTransactions(
+            newTransactions,
+            state.filterOptions
+          );
+          const summary = calculateSummary(
+            newTransactions,
+            filteredTransactions
+          );
+          return {
+            ...state,
+            transactions: newTransactions,
+            filteredTransactions,
+            summary,
+          };
+        });
         try {
           const token = await getAuthToken();
           const res = await fetch(`${API_URL}/${id}`, {
@@ -139,20 +220,74 @@ export const useTransactionStore = create<TransactionState>()(
           const data = await res.json();
           if (!res.ok)
             throw new Error(data.error || "Failed to update transaction");
-          await get().fetchTransactions();
+          // Replace with backend version
+          set((state) => {
+            const newTransactions = state.transactions.map((t) =>
+              t.id === id ? data : t
+            );
+            const filteredTransactions = filterTransactions(
+              newTransactions,
+              state.filterOptions
+            );
+            const summary = calculateSummary(
+              newTransactions,
+              filteredTransactions
+            );
+            return {
+              ...state,
+              transactions: newTransactions,
+              filteredTransactions,
+              summary,
+              isLoading: false,
+            };
+          });
         } catch (error) {
-          set({
-            error:
-              error instanceof Error
-                ? error.message
-                : "Failed to update transaction",
-            isLoading: false,
+          // Rollback
+          set((state) => {
+            const filteredTransactions = filterTransactions(
+              prevTransactions,
+              state.filterOptions
+            );
+            const summary = calculateSummary(
+              prevTransactions,
+              filteredTransactions
+            );
+            return {
+              ...state,
+              transactions: prevTransactions,
+              filteredTransactions,
+              summary,
+              isLoading: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Failed to update transaction",
+            };
           });
         }
       },
 
       deleteTransaction: async (id) => {
-        set({ isLoading: true, error: null });
+        // Snapshot previous state
+        const prevTransactions = get().transactions;
+        // Optimistically remove
+        set((state) => {
+          const newTransactions = state.transactions.filter((t) => t.id !== id);
+          const filteredTransactions = filterTransactions(
+            newTransactions,
+            state.filterOptions
+          );
+          const summary = calculateSummary(
+            newTransactions,
+            filteredTransactions
+          );
+          return {
+            ...state,
+            transactions: newTransactions,
+            filteredTransactions,
+            summary,
+          };
+        });
         try {
           const token = await getAuthToken();
           const res = await fetch(`${API_URL}/${id}`, {
@@ -160,14 +295,28 @@ export const useTransactionStore = create<TransactionState>()(
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!res.ok) throw new Error("Failed to delete transaction");
-          await get().fetchTransactions();
         } catch (error) {
-          set({
-            error:
-              error instanceof Error
-                ? error.message
-                : "Failed to delete transaction",
-            isLoading: false,
+          // Rollback
+          set((state) => {
+            const filteredTransactions = filterTransactions(
+              prevTransactions,
+              state.filterOptions
+            );
+            const summary = calculateSummary(
+              prevTransactions,
+              filteredTransactions
+            );
+            return {
+              ...state,
+              transactions: prevTransactions,
+              filteredTransactions,
+              summary,
+              isLoading: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Failed to delete transaction",
+            };
           });
         }
       },
