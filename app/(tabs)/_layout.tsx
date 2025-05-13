@@ -1,20 +1,45 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { Home, PieChart, Plus, Settings, FileText } from 'lucide-react-native';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
-import { useThemeStore } from '@/stores/theme-store';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from "react";
+import { Tabs } from "expo-router";
+import { Home, PieChart, Plus, Settings, FileText } from "lucide-react-native";
+import { TouchableOpacity, View, StyleSheet } from "react-native";
+import { colors } from "@/constants/colors";
+import { useThemeStore } from "@/stores/theme-store";
+import { useRouter } from "expo-router";
+import { useAutoTransactionSync } from "@/hooks/useAutoTransactionSync";
+import { useAuthStore, getAuthToken } from "@/stores/auth-store";
+import { database } from "@/db/index";
 
 export default function TabLayout() {
   const { theme } = useThemeStore();
   const themeColors = colors[theme];
   const router = useRouter();
-  
+  const { user } = useAuthStore();
+  const [jwt, setJwt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      getAuthToken().then(setJwt);
+    } else {
+      setJwt(null);
+    }
+  }, [user]);
+
+  useAutoTransactionSync({
+    userId: user?.id || "",
+    jwt: jwt || "",
+  });
+
+  //TEMP: Reset WatermelonDB on mount to fix schema mismatch. REMOVE AFTER FIRST RUN!
+  // useEffect(() => {
+  //   database.action(async () => {
+  //     await database.unsafeResetDatabase();
+  //   });
+  // }, []);
+
   const handleAddTransaction = () => {
-    router.push('/transaction/new');
+    router.push("/transaction/new");
   };
-  
+
   return (
     <Tabs
       screenOptions={{
@@ -34,26 +59,31 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: "Dashboard",
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
-      
+
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
-          tabBarIcon: ({ color, size }) => <FileText size={size} color={color} />,
+          title: "History",
+          tabBarIcon: ({ color, size }) => (
+            <FileText size={size} color={color} />
+          ),
         }}
       />
-      
+
       <Tabs.Screen
         name="add"
         options={{
-          title: '',
+          title: "",
           tabBarIcon: () => (
             <TouchableOpacity
-              style={[styles.addButton, { backgroundColor: themeColors.primary }]}
+              style={[
+                styles.addButton,
+                { backgroundColor: themeColors.primary },
+              ]}
               onPress={handleAddTransaction}
             >
               <Plus size={24} color="#fff" />
@@ -68,20 +98,24 @@ export default function TabLayout() {
           },
         }}
       />
-      
+
       <Tabs.Screen
         name="reports"
         options={{
-          title: 'Reports',
-          tabBarIcon: ({ color, size }) => <PieChart size={size} color={color} />,
+          title: "Reports",
+          tabBarIcon: ({ color, size }) => (
+            <PieChart size={size} color={color} />
+          ),
         }}
       />
-      
+
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Settings size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
@@ -93,10 +127,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 32,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,

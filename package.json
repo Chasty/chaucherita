@@ -6,13 +6,18 @@
   "scripts": {
     "start": "expo start",
     "start-web": "expo start --web",
-    "start-web-dev": "DEBUG=expo* expo start --web"
+    "start-web-dev": "DEBUG=expo* expo start --web",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.1.4",
+    "@nozbe/watermelondb": "^0.28.0",
+    "@nozbe/with-observables": "^1.6.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/datetimepicker": "8.3.0",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/native": "^7.1.6",
     "expo": "^53.0.4",
     "expo-blur": "~14.1.4",

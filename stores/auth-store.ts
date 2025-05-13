@@ -5,7 +5,9 @@ import { User } from "@/types";
 import { useTransactionStore } from "@/stores/transaction-store";
 
 const API_URL_DEV = "http://localhost:5007/api/auth"; // Change to your backend URL if needed
-const API_URL = "https://chaucherita.onrender.com/api/auth";
+const API_URL_PROD = "https://chaucherita.onrender.com/api/auth";
+
+const API_URL = __DEV__ ? API_URL_DEV : API_URL_PROD;
 const TOKEN_KEY = "auth-token";
 
 interface AuthState {
