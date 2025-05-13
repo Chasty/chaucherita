@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { SummaryCard } from "@/components/ui/SummaryCard";
@@ -20,8 +20,22 @@ export default function DashboardScreen() {
   const themeColors = colors[theme];
   const { user } = useAuthStore();
 
-  const { filteredTransactions, summary, filterOptions, setFilterOptions } =
-    useTransactionStore();
+  const {
+    fetchTransactions,
+    filteredTransactions,
+    summary,
+    filterOptions,
+    setFilterOptions,
+  } = useTransactionStore();
+
+  useEffect(() => {
+    if (user && user.id) {
+      fetchTransactions();
+    } else {
+      // Clear transactions if no user
+      setFilterOptions({ period: "today", type: "all" });
+    }
+  }, [user?.id]);
 
   console.log({ filteredTransactions });
 

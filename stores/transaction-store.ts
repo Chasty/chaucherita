@@ -38,6 +38,7 @@ interface TransactionState {
   ) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   setFilterOptions: (options: Partial<FilterOptions>) => void;
+  clearAll: () => Promise<void>;
 }
 
 export const useTransactionStore = create<TransactionState>()(
@@ -341,6 +342,25 @@ export const useTransactionStore = create<TransactionState>()(
             summary,
           };
         });
+      },
+
+      clearAll: async () => {
+        // Clear Zustand state
+        set({
+          transactions: [],
+          filteredTransactions: [],
+          summary: {
+            totalIncome: 0,
+            totalExpense: 0,
+            netBalance: 0,
+            categorySummary: {},
+            monthlySummary: {},
+          },
+          error: null,
+          isLoading: false,
+        });
+        // Remove from AsyncStorage
+        await AsyncStorage.removeItem("transactions-storage");
       },
     }),
     {

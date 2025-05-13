@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/types";
+import { useTransactionStore } from "@/stores/transaction-store";
 
 const API_URL_DEV = "http://localhost:5007/api/auth"; // Change to your backend URL if needed
 const API_URL = "https://chaucherita.onrender.com/api/auth";
@@ -70,6 +71,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async (callback) => {
         await AsyncStorage.removeItem(TOKEN_KEY);
         set({ user: null, isAuthenticated: false });
+        await useTransactionStore.getState().clearAll();
         if (callback) callback();
       },
 
