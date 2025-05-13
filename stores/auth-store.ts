@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/types";
 
-const API_URL = "http://localhost:5007/api/auth"; // Change to your backend URL if needed
+const API_URL_DEV = "http://localhost:5007/api/auth"; // Change to your backend URL if needed
+const API_URL = "https://chaucherita.onrender.com/api/auth";
 const TOKEN_KEY = "auth-token";
 
 interface AuthState {

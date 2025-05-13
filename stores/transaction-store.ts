@@ -5,7 +5,8 @@ import { FilterOptions, Transaction, Summary } from "@/types";
 import { getDateRangeForPeriod } from "@/utils/date";
 import { getAuthToken } from "@/stores/auth-store";
 
-const API_URL = "http://localhost:5007/api/transactions";
+const API_URL_DEV = "http://localhost:5007/api/transactions";
+const API_URL = "https://chaucherita.onrender.com/api/transactions";
 
 // Debug function to check AsyncStorage
 const debugAsyncStorage = async () => {

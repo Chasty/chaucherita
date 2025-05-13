@@ -49,3 +49,25 @@ This is the backend for Chaucherita, built with Node.js, Express, and Supabase.
 ## Notes
 
 - Ensure your Supabase project has a `
+
+## Deploying to Render
+
+1. **Environment Variables:**
+
+   - `SUPABASE_URL` — Your Supabase project URL
+   - `SUPABASE_KEY` — Your Supabase service role key
+   - `PORT` — Set to `10000` (Render default) or leave blank (Render sets it automatically)
+   - `JWT_SECRET` — A strong secret for JWT signing
+
+2. **Start Command:**
+
+   - `npm start`
+
+3. **Node Version:**
+
+   - Uses Node.js 18+ (see `package.json`)
+
+4. **CORS:**
+   - The backend enables CORS for all origins by default. Adjust in `src/app.js` if needed.
+
+---
