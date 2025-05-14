@@ -44,9 +44,10 @@ exports.update = async (user_id, id, updates) => {
 };
 
 exports.remove = async (user_id, id) => {
+  // Soft delete: mark as deleted for sync
   const { error } = await supabase
     .from("transactions")
-    .delete()
+    .update({ sync_status: "deleted" })
     .eq("user_id", user_id)
     .eq("id", id);
   if (error) throw error;

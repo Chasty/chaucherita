@@ -69,13 +69,26 @@ describe("transactionService", () => {
     expect(result).toEqual(transaction);
   });
 
-  it("remove deletes transaction", async () => {
-    supabase.from.mockReturnValue({
-      delete: () => ({ eq: () => ({ eq: () => ({ error: null }) }) }),
-    });
+  it("remove soft deletes transaction", async () => {
+    const updateMock = jest
+      .fn()
+      .mockReturnValue({ eq: () => ({ eq: () => ({ error: null }) }) });
+    supabase.from.mockReturnValue({ update: updateMock });
     await expect(
       transactionService.remove(user_id, "tx-1")
     ).resolves.toBeUndefined();
+    expect(updateMock).toHaveBeenCalledWith({ sync_status: "deleted" });
+  });
+
+  it("getAll returns soft-deleted transaction with sync_status = 'deleted'", async () => {
+    const deletedTx = { ...transaction, sync_status: "deleted" };
+    supabase.from.mockReturnValue({
+      select: () => ({
+        eq: () => ({ order: () => ({ data: [deletedTx], error: null }) }),
+      }),
+    });
+    const result = await transactionService.getAll(user_id);
+    expect(result[0].sync_status).toBe("deleted");
   });
 
   it("throws on error", async () => {

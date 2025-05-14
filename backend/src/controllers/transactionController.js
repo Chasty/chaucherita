@@ -79,11 +79,15 @@ exports.syncPull = async (req, res, next) => {
   try {
     const user_id = req.query.user_id;
     const lastPulledAt = Number(req.query.last_pulled_at) || 0;
-    // Fetch all transactions for this user updated since lastPulledAt
-    const transactions = await transactionService.updatedSince(
-      user_id,
-      lastPulledAt
-    );
+    // Fetch all transactions for this user updated since lastPulledAt OR soft-deleted
+    const { data: transactions, error } =
+      await require("../config/supabaseClient")
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user_id)
+        .or(`updated_at.gt.${lastPulledAt},sync_status.eq.deleted`)
+        .order("updated_at", { ascending: true });
+    if (error) throw error;
     // WatermelonDB expects changes in { created, updated, deleted } arrays
     const changes = {
       transactions: {
