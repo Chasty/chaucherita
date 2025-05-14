@@ -70,4 +70,25 @@ This is the backend for Chaucherita, built with Node.js, Express, and Supabase.
 4. **CORS:**
    - The backend enables CORS for all origins by default. Adjust in `src/app.js` if needed.
 
+## WatermelonDB Sync Protocol
+
+Chaucherita's backend supports robust offline-first sync with WatermelonDB:
+
+- **Endpoints:**
+
+  - `POST /api/transactions/sync/push` — Accepts local changes from the client (created, updated, deleted transactions in WatermelonDB sync format).
+  - `GET /api/transactions/sync/pull` — Returns all changes for the user since the last sync timestamp, in WatermelonDB sync format.
+
+- **How it works:**
+
+  - The client pushes local changes (including deletions) and pulls remote changes in a single sync operation.
+  - The backend upserts or deletes transactions as needed, using `updated_at` for conflict resolution.
+  - WatermelonDB-only fields (`_changed`, `_status`, `sync_status`, `version`) are ignored on the backend.
+  - The `tags` field is converted from a JSON string to a Postgres array as needed.
+  - The `transactions` table uses a `text` primary key for `id` to support WatermelonDB IDs.
+
+- **See Also:**
+  - `/stores/transaction-sync.ts` in the client for sync logic
+  - [WatermelonDB Sync Protocol Docs](https://watermelondb.dev/docs/Sync/#sync-protocol)
+
 ---
