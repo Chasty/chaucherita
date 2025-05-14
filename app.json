@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chaucherita",
     "slug": "chaucherita-finance-app",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -37,6 +37,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "61c1a030-ee4c-4d72-b806-7f8ea442badb"
+      }
+    },
+    "owner": "chastywi"
   }
 }
