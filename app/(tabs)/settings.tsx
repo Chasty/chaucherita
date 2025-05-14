@@ -233,7 +233,7 @@ export default function SettingsScreen() {
       />
 
       <Text style={[styles.versionText, { color: themeColors.subtext }]}>
-        Version 1.0.0
+        Version 0.0.1 yara
       </Text>
     </ScrollView>
   );

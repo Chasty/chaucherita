@@ -43,6 +43,10 @@
         "projectId": "61c1a030-ee4c-4d72-b806-7f8ea442badb"
       }
     },
-    "owner": "chastywi"
+    "owner": "chastywi",
+    "runtimeVersion": "0.0.1",
+    "updates": {
+      "url": "https://u.expo.dev/61c1a030-ee4c-4d72-b806-7f8ea442badb"
+    }
   }
 }

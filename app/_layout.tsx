@@ -2,8 +2,8 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import { Platform, useColorScheme } from "react-native";
+import { useEffect, useMemo } from "react";
+import { InteractionManager, Platform, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useThemeStore } from "@/stores/theme-store";
 import { colors } from "@/constants/colors";
@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { ErrorBoundary } from "./error-boundary";
+import { useExpoUpdateStatus } from "@/hooks/useExpoUpdate";
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -28,6 +29,15 @@ export default function RootLayout() {
   const { theme } = useThemeStore();
   const themeColors = colors[theme];
 
+  const expoUpdateState = useExpoUpdateStatus();
+
+  const isHydrated = useMemo(() => {
+    if (!expoUpdateState.hydrated || expoUpdateState.isPending) {
+      return false;
+    }
+    return loaded;
+  }, [expoUpdateState, loaded]);
+
   useEffect(() => {
     if (error) {
       console.error(error);
@@ -36,12 +46,17 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (isHydrated) {
+      const interaction = InteractionManager.runAfterInteractions(() => {
+        SplashScreen.hide();
+      });
+      return () => {
+        interaction.cancel();
+      };
     }
-  }, [loaded]);
+  }, [isHydrated]);
 
-  if (!loaded) {
+  if (!isHydrated) {
     return null;
   }
 
