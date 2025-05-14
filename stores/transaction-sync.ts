@@ -1,10 +1,6 @@
 import { database } from "@/db/index";
+import { API_URL } from "@/utils/api";
 import { synchronize } from "@nozbe/watermelondb/sync";
-
-const API_URL_DEV = "http://localhost:5007/api/transactions"; // Change to your backend URL if needed
-const API_URL_PROD = "https://chaucherita.onrender.com/api/transactions";
-
-const API_URL = __DEV__ ? API_URL_DEV : API_URL_PROD;
 
 export interface SyncResult {
   success: boolean;
@@ -40,14 +36,14 @@ export async function syncTransactions({
         //alert("pullChanges");
         console.log("here pull changes");
         console.log(
-          `${API_URL}/sync/pull?user_id=${userId}&last_pulled_at=${
+          `${API_URL}/transactions/sync/pull?user_id=${userId}&last_pulled_at=${
             lastPulledAt || 0
           }`
         );
         console.log(jwt);
         // Fetch changes from backend in WatermelonDB sync protocol format
         const res = await fetch(
-          `${API_URL}/sync/pull?user_id=${userId}&last_pulled_at=${
+          `${API_URL}/transactions/sync/pull?user_id=${userId}&last_pulled_at=${
             lastPulledAt || 0
           }`,
           {
@@ -70,7 +66,7 @@ export async function syncTransactions({
         console.log("push changes");
         console.log(
           "push changes",
-          `${API_URL}/sync/push?user_id=${userId}&last_pulled_at=${
+          `${API_URL}/transactions/sync/push?user_id=${userId}&last_pulled_at=${
             lastPulledAt || 0
           }`
         );
@@ -78,7 +74,7 @@ export async function syncTransactions({
         console.log("here push changes", changes);
         // Push local changes to backend in WatermelonDB sync protocol format
         const res = await fetch(
-          `${API_URL}/sync/push?user_id=${userId}&last_pulled_at=${
+          `${API_URL}/transactions/sync/push?user_id=${userId}&last_pulled_at=${
             lastPulledAt || 0
           }`,
           {

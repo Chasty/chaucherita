@@ -3,11 +3,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/types";
 import { useTransactionStore } from "@/stores/transaction-store";
+import { API_URL } from "@/utils/api";
 
-const API_URL_DEV = "http://localhost:5007/api/auth"; // Change to your backend URL if needed
-const API_URL_PROD = "https://chaucherita.onrender.com/api/auth";
-
-const API_URL = __DEV__ ? API_URL_DEV : API_URL_PROD;
 const TOKEN_KEY = "auth-token";
 
 interface AuthState {
@@ -32,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true, error: null });
         try {
-          const res = await fetch(`${API_URL}/login`, {
+          const res = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -52,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (email, password, name) => {
         set({ isLoading: true, error: null });
         try {
-          const res = await fetch(`${API_URL}/register`, {
+          const res = await fetch(`${API_URL}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password, name }),

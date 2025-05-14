@@ -44,10 +44,11 @@ exports.update = async (user_id, id, updates) => {
 };
 
 exports.remove = async (user_id, id) => {
-  // Soft delete: mark as deleted for sync
+  // Soft delete: mark as deleted for sync and update last_synced_at
+  const now = Date.now();
   const { error } = await supabase
     .from("transactions")
-    .update({ sync_status: "deleted" })
+    .update({ sync_status: "deleted", last_synced_at: now, updated_at: now })
     .eq("user_id", user_id)
     .eq("id", id);
   if (error) throw error;
@@ -56,7 +57,6 @@ exports.remove = async (user_id, id) => {
 exports.sync = async (user_id, transactions) => {
   const results = [];
   for (const tx of transactions) {
-    // Always set user_id to ensure scoping
     tx.user_id = user_id;
     // Remove WatermelonDB sync fields
     const { _changed, _status, sync_status, version, ...cleanTx } = tx;
@@ -68,24 +68,41 @@ exports.sync = async (user_id, transactions) => {
         cleanTx.tags = [];
       }
     }
-    // Upsert with conflict resolution by id and updated_at/version
-    // If incoming tx.updated_at is newer, update; else skip
+    // Always use server time for created_at, updated_at, last_synced_at
+    const now = Date.now();
+    // Check if exists
     const { data: existing, error: findErr } = await supabase
       .from("transactions")
       .select("*")
       .eq("id", cleanTx.id)
       .single();
     if (findErr && findErr.code !== "PGRST116") throw findErr;
-    if (
-      !existing ||
-      (typeof cleanTx.updated_at === "number" &&
-        typeof existing.updated_at === "number" &&
-        cleanTx.updated_at > existing.updated_at)
+    let upsertTx;
+    if (!existing) {
+      upsertTx = {
+        ...cleanTx,
+        created_at: now,
+        updated_at: now,
+        last_synced_at: now,
+        sync_status: "synced",
+      };
+    } else if (
+      typeof cleanTx.updated_at === "number" &&
+      typeof existing.updated_at === "number" &&
+      cleanTx.updated_at > existing.updated_at
     ) {
-      // Upsert
+      upsertTx = {
+        ...existing,
+        ...cleanTx,
+        updated_at: now,
+        last_synced_at: now,
+        sync_status: "synced",
+      };
+    }
+    if (upsertTx) {
       const { data, error } = await supabase
         .from("transactions")
-        .upsert([cleanTx], { onConflict: ["id"] })
+        .upsert([upsertTx], { onConflict: ["id"] })
         .select()
         .single();
       if (error) throw error;
