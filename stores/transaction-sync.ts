@@ -38,6 +38,7 @@ export async function syncTransactions({
       database,
       pullChanges: async ({ lastPulledAt }) => {
         //alert("pullChanges");
+        console.log("here pull changes");
         console.log(
           `${API_URL}/sync/pull?user_id=${userId}&last_pulled_at=${
             lastPulledAt || 0
@@ -57,12 +58,15 @@ export async function syncTransactions({
         );
         if (!res.ok) throw new Error("Failed to pull remote changes");
         const { changes, timestamp } = await res.json();
+        console.log("here pulled changes", changes);
         pulled = Object.values(changes.transactions?.updated || {}).length;
         newLastSync = timestamp;
         return { changes, timestamp };
       },
       pushChanges: async ({ changes, lastPulledAt }) => {
         //alert("pushChanges");
+        console.log("here pushChanges");
+
         console.log("push changes");
         console.log(
           "push changes",
@@ -71,7 +75,7 @@ export async function syncTransactions({
           }`
         );
         console.log("push changes", jwt);
-        console.log("push changes", JSON.stringify({ changes }));
+        console.log("here push changes", changes);
         // Push local changes to backend in WatermelonDB sync protocol format
         const res = await fetch(
           `${API_URL}/sync/push?user_id=${userId}&last_pulled_at=${

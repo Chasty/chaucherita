@@ -17,6 +17,8 @@ export function useAutoTransactionSync({
   const setSyncState = useTransactionStore((s) => s.setSyncState);
   const hasSyncedOnMount = useRef(false);
 
+  const { fetchTransactions } = useTransactionStore();
+
   // Helper to trigger sync
   const triggerSync = async () => {
     if (!userId || !jwt || isSyncing) return;
@@ -31,6 +33,7 @@ export function useAutoTransactionSync({
       lastSync: result.success ? result.lastSync : lastSync,
       syncError: result.success ? null : result.error,
     });
+    fetchTransactions();
   };
 
   // Sync on mount (app start)
@@ -48,10 +51,10 @@ export function useAutoTransactionSync({
       console.log("state", state);
       if (state.isConnected && state.isInternetReachable && userId && jwt) {
         //todo: this is triggering alot
-        //alert("triggering sync netinfo");
-        // setTimeout(() => {
-        //   triggerSync();
-        // }, 1000);
+        // alert("triggering sync netinfo");
+        setTimeout(() => {
+          triggerSync();
+        }, 1000);
       }
     });
     return () => unsubscribe();

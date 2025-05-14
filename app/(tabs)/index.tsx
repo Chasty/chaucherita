@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { SummaryCard } from "@/components/ui/SummaryCard";
@@ -20,6 +20,8 @@ export default function DashboardScreen() {
   const themeColors = colors[theme];
   const { user } = useAuthStore();
 
+  const userId = useMemo(() => user?.id, [user]);
+
   const {
     fetchTransactions,
     filteredTransactions,
@@ -28,14 +30,16 @@ export default function DashboardScreen() {
     setFilterOptions,
   } = useTransactionStore();
 
+  console.log("yaraa", user);
+
   useEffect(() => {
-    if (user && user.id) {
-      fetchTransactions(user.id);
+    if (userId) {
+      fetchTransactions();
     } else {
       // Clear transactions if no user
       setFilterOptions({ period: "today", type: "all" });
     }
-  }, [user?.id]);
+  }, [userId]);
 
   console.log({ filteredTransactions });
 
